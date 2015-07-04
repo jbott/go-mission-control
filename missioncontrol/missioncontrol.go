@@ -2,11 +2,12 @@ package missioncontrol
 
 import (
 	"fmt"
+	"github.com/veandco/go-sdl2/sdl"
 	"os"
-	"sdl"
 )
 
 type MissionControl struct {
+	Display  int
 	Windows  []*window
 	renderer *sdl.Renderer
 }
@@ -14,8 +15,10 @@ type MissionControl struct {
 func Init() *MissionControl {
 	mc := new(MissionControl)
 
+	var err error
+
 	// Create a new window with a default size
-	window, err := sdl.CreateWindow(winTitle, sdl.WINDOWPOS_CENTERED, sdl.WINDOWPOS_CENTERED,
+	window, err := sdl.CreateWindow("Mission Control", sdl.WINDOWPOS_CENTERED, sdl.WINDOWPOS_CENTERED,
 		640, 480, sdl.WINDOW_SHOWN)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to create window: %s\n", err)
@@ -25,25 +28,27 @@ func Init() *MissionControl {
 
 	// Set window to fullscreen
 	var disp_rect sdl.Rect
-	sdl.GetDisplayBounds(display, &disp_rect)
+	sdl.GetDisplayBounds(mc.Display, &disp_rect)
 	window.SetPosition(int(disp_rect.X), int(disp_rect.Y))
 	window.SetSize(int(disp_rect.W), int(disp_rect.H))
 	window.SetFullscreen(sdl.WINDOW_FULLSCREEN)
 
-	renderer, err = sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED)
+	mc.renderer, err = sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to create renderer: %s\n", err)
 		os.Exit(2)
 	}
-	defer renderer.Destroy()
+	defer mc.renderer.Destroy()
 
-	renderer.Clear()
+	mc.renderer.Clear()
 
 	return mc
 }
 
 func (mc *MissionControl) Start() {
-	running = true
+	var event sdl.Event
+	var running bool = true
+
 	for running {
 		for event = sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 			switch t := event.(type) {
@@ -61,16 +66,20 @@ func (mc *MissionControl) Start() {
 			case *sdl.KeyUpEvent:
 				fmt.Printf("[%d ms] Keyboard\ttype:%d\tsym:%c\tmodifiers:%d\tstate:%d\trepeat:%d\n",
 					t.Timestamp, t.Type, t.Keysym.Sym, t.Keysym.Mod, t.State, t.Repeat)
+				// Quit on escape
+				if t.Keysym.Sym == sdl.K_ESCAPE {
+					running = false
+				}
 			}
 		}
 
 	}
 
-	renderer.Clear()
+	mc.renderer.Clear()
 
 	// Update the ui
 
-	renderer.Present()
+	mc.renderer.Present()
 
 	// We need to sleep the remainder of the frame here
 }
