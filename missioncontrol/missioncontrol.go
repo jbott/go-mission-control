@@ -7,11 +7,12 @@ import (
 )
 
 type MissionControl struct {
-	Display    int
-	Windows    []*window
-	Widgets    []*widget
-	sdl_window *sdl.Window
-	renderer   *sdl.Renderer
+	Display              int
+	drawables            []drawableInterface
+	sdl_window           *sdl.Window
+	renderer             *sdl.Renderer
+	background_color     [4]uint8
+	default_border_color [4]uint8
 }
 
 func Init() *MissionControl {
@@ -40,6 +41,8 @@ func Init() *MissionControl {
 		os.Exit(2)
 	}
 	mc.renderer.Clear()
+
+	mc.background_color[3] = 255
 
 	return mc
 }
@@ -78,16 +81,16 @@ func (mc *MissionControl) Start() {
 		}
 
 		// This will update the entire screen to this color
-		mc.renderer.SetDrawColor(0, 0, 0, 255)
+		mc.renderer.SetDrawColor(
+			mc.background_color[0],
+			mc.background_color[1],
+			mc.background_color[2],
+			mc.background_color[3])
 		mc.renderer.Clear()
 
 		// Update the ui
-		for _, w := range mc.Windows {
-			w.Draw(mc.renderer)
-		}
-
-		for _, w := range mc.Widgets {
-			w.Draw(mc.renderer)
+		for _, d := range mc.drawables {
+			d.Draw(mc.renderer)
 		}
 
 		mc.renderer.Present()
@@ -96,6 +99,21 @@ func (mc *MissionControl) Start() {
 	}
 }
 
-func (mc *MissionControl) AddWindow(w *window) {
-	mc.Windows = append(mc.Windows, w)
+func (mc *MissionControl) Add(d drawableInterface) drawableInterface {
+	mc.drawables = append(mc.drawables, d)
+	return d
+}
+
+func (mc *MissionControl) SetBackgroundColor(r uint8, g uint8, b uint8, a uint8) {
+	mc.background_color[0] = r
+	mc.background_color[1] = g
+	mc.background_color[2] = b
+	mc.background_color[3] = a
+}
+
+func (mc *MissionControl) SetDefaultBorderColor(r uint8, g uint8, b uint8, a uint8) {
+	mc.default_border_color[0] = r
+	mc.default_border_color[1] = g
+	mc.default_border_color[2] = b
+	mc.default_border_color[3] = a
 }
