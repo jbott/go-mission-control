@@ -7,9 +7,11 @@ import (
 )
 
 type MissionControl struct {
-	Display  int
-	Windows  []*window
-	renderer *sdl.Renderer
+	Display    int
+	Windows    []*window
+	Widgets    []*widget
+	sdl_window *sdl.Window
+	renderer   *sdl.Renderer
 }
 
 func Init() *MissionControl {
@@ -18,31 +20,33 @@ func Init() *MissionControl {
 	var err error
 
 	// Create a new window with a default size
-	window, err := sdl.CreateWindow("Mission Control", sdl.WINDOWPOS_CENTERED, sdl.WINDOWPOS_CENTERED,
+	mc.sdl_window, err = sdl.CreateWindow("Mission Control", sdl.WINDOWPOS_CENTERED, sdl.WINDOWPOS_CENTERED,
 		640, 480, sdl.WINDOW_SHOWN)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to create window: %s\n", err)
 		os.Exit(1)
 	}
-	defer window.Destroy()
 
 	// Set window to fullscreen
 	var disp_rect sdl.Rect
 	sdl.GetDisplayBounds(mc.Display, &disp_rect)
-	window.SetPosition(int(disp_rect.X), int(disp_rect.Y))
-	window.SetSize(int(disp_rect.W), int(disp_rect.H))
-	window.SetFullscreen(sdl.WINDOW_FULLSCREEN)
+	mc.sdl_window.SetPosition(int(disp_rect.X), int(disp_rect.Y))
+	mc.sdl_window.SetSize(int(disp_rect.W), int(disp_rect.H))
+	mc.sdl_window.SetFullscreen(sdl.WINDOW_FULLSCREEN)
 
-	mc.renderer, err = sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED)
+	mc.renderer, err = sdl.CreateRenderer(mc.sdl_window, -1, sdl.RENDERER_ACCELERATED)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to create renderer: %s\n", err)
 		os.Exit(2)
 	}
-	defer mc.renderer.Destroy()
-
 	mc.renderer.Clear()
 
 	return mc
+}
+
+func (mc *MissionControl) Destroy() {
+	mc.renderer.Destroy()
+	mc.sdl_window.Destroy()
 }
 
 func (mc *MissionControl) Start() {
@@ -73,13 +77,25 @@ func (mc *MissionControl) Start() {
 			}
 		}
 
+		// This will update the entire screen to this color
+		mc.renderer.SetDrawColor(0, 0, 0, 255)
+		mc.renderer.Clear()
+
+		// Update the ui
+		for _, w := range mc.Windows {
+			w.Draw(mc.renderer)
+		}
+
+		for _, w := range mc.Widgets {
+			w.Draw(mc.renderer)
+		}
+
+		mc.renderer.Present()
+
+		// We need to sleep the remainder of the frame here
 	}
+}
 
-	mc.renderer.Clear()
-
-	// Update the ui
-
-	mc.renderer.Present()
-
-	// We need to sleep the remainder of the frame here
+func (mc *MissionControl) AddWindow(w *window) {
+	mc.Windows = append(mc.Windows, w)
 }
