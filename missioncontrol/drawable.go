@@ -20,36 +20,22 @@ type drawable struct {
 func (d *drawable) Draw(r *sdl.Renderer) {
 	// Fill
 	if d.fill {
-		r.SetDrawColor(
-			d.fill_color[0],
-			d.fill_color[1],
-			d.fill_color[2],
-			d.fill_color[3])
+		SetDrawColor(r, d.fill_color)
 		r.FillRect(&sdl.Rect{d.X, d.Y, d.W, d.H})
 	}
 
 	// Draw bounds
-	r.SetDrawColor(
-		d.border_color[0],
-		d.border_color[1],
-		d.border_color[2],
-		d.border_color[3])
+	SetDrawColor(r, d.border_color)
 	r.DrawRect(&sdl.Rect{d.X, d.Y, d.W, d.H})
 }
 
 func (d *drawable) Update() {}
 
 func (d *drawable) SetBorderColor(r uint8, g uint8, b uint8, a uint8) {
-	d.border_color[0] = r
-	d.border_color[1] = g
-	d.border_color[2] = b
-	d.border_color[3] = a
+	SetColor(&d.border_color, r, g, b, a)
 }
 
 func (d *drawable) SetFillColor(r uint8, g uint8, b uint8, a uint8) {
 	d.fill = true
-	d.fill_color[0] = r
-	d.fill_color[1] = g
-	d.fill_color[2] = b
-	d.fill_color[3] = a
+	SetColor(&d.fill_color, r, g, b, a)
 }

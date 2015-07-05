@@ -42,7 +42,7 @@ func Init() *MissionControl {
 	}
 	mc.renderer.Clear()
 
-	mc.background_color[3] = 255
+	mc.SetBackgroundColor(0, 0, 0, 255)
 
 	return mc
 }
@@ -86,11 +86,7 @@ func (mc *MissionControl) Start() {
 		}
 
 		// This will update the entire screen to this color
-		mc.renderer.SetDrawColor(
-			mc.background_color[0],
-			mc.background_color[1],
-			mc.background_color[2],
-			mc.background_color[3])
+		SetDrawColor(mc.renderer, mc.background_color)
 		mc.renderer.Clear()
 
 		// Update the ui
@@ -110,15 +106,24 @@ func (mc *MissionControl) Add(d drawableInterface) drawableInterface {
 }
 
 func (mc *MissionControl) SetBackgroundColor(r uint8, g uint8, b uint8, a uint8) {
-	mc.background_color[0] = r
-	mc.background_color[1] = g
-	mc.background_color[2] = b
-	mc.background_color[3] = a
+	SetColor(&mc.background_color, r, g, b, a)
 }
 
 func (mc *MissionControl) SetDefaultBorderColor(r uint8, g uint8, b uint8, a uint8) {
-	mc.default_border_color[0] = r
-	mc.default_border_color[1] = g
-	mc.default_border_color[2] = b
-	mc.default_border_color[3] = a
+	SetColor(&mc.default_border_color, r, g, b, a)
+}
+
+func SetColor(color *[4]uint8, r uint8, g uint8, b uint8, a uint8) {
+	color[0] = r
+	color[1] = g
+	color[2] = b
+	color[3] = a
+}
+
+func SetDrawColor(r *sdl.Renderer, color [4]uint8) {
+	r.SetDrawColor(
+		color[0],
+		color[1],
+		color[2],
+		color[3])
 }
