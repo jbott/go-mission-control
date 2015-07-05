@@ -4,6 +4,7 @@ import "github.com/veandco/go-sdl2/sdl"
 
 type drawableInterface interface {
 	Draw(*sdl.Renderer)
+	Update()
 }
 
 type drawable struct {
@@ -35,6 +36,8 @@ func (d *drawable) Draw(r *sdl.Renderer) {
 		d.border_color[3])
 	r.DrawRect(&sdl.Rect{d.X, d.Y, d.W, d.H})
 }
+
+func (d *drawable) Update() {}
 
 func (d *drawable) SetBorderColor(r uint8, g uint8, b uint8, a uint8) {
 	d.border_color[0] = r

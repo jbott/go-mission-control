@@ -80,6 +80,11 @@ func (mc *MissionControl) Start() {
 			}
 		}
 
+		// Update each widget
+		for _, d := range mc.drawables {
+			d.Update()
+		}
+
 		// This will update the entire screen to this color
 		mc.renderer.SetDrawColor(
 			mc.background_color[0],
